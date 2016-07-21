@@ -1,0 +1,23 @@
+<h1>Add a new Question</h1>
+
+<form action="{% url 'TennisApp:test'  %}" method="post" id="form1">
+    {% csrf_token %}
+    <ul>
+        <label id="h2" for="set1player1">Satz 1</label>
+        <li>
+            <input type="text" name="set1" id="set1player1" value="0" title="Spieler1"/>
+            <input type="text" name="set1" id="set1player2" value="0" title="Spieler2"/>
+        </li>
+        <label id="h2" for="set2player1">Satz 2</label>
+        <li>
+            <input type="text" name="set2" id="set2player1" value="0" title="Spieler1"/>
+            <input type="text" name="set2" id="set2player2" value="0" title="Spieler2"/>
+        </li>
+        <label id="h2" for="set3player1">Satz 3</label>
+        <li>
+            <input type="text" name="set3" id="set3player1" value="0" title="Spieler1"/>
+            <input type="text" name="set3" id="set3player2" value="0" title="Spieler2"/>
+        </li>
+        <input type="submit" value="Abschicken"/>
+    </ul>
+</form>

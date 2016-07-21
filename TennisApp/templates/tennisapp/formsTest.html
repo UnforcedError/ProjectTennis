@@ -1,0 +1,14 @@
+{% load staticfiles %}
+<html>
+    <head>
+        <title>Add a new Player's profile</title>
+        <link rel="stylesheet" href="{% static 'tennisapp/forms.css' %}">
+    </head>
+    <body>
+        <form action="{% url 'TennisApp:test_forms' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
+    </body>
+</html>
