@@ -1,11 +1,14 @@
-import datetime
+from enum import Enum
 
 from django.db import models
 from django.utils import timezone
 
+Players = Enum('Player1', 'Player2')
+
 # Create your models here.
 
-#class for player
+
+# class for player
 class Player(models.Model):
     """
     Representing a player
@@ -32,7 +35,7 @@ class Player(models.Model):
 
 
 
-#class for matches
+# class for matches
 class Match(models.Model):
     """
     A Model class as a representation for Tennis matches
@@ -62,6 +65,36 @@ class Score(models.Model):
     score_set2 = models.CharField(max_length=10)
     score_set3 = models.CharField(max_length=10)
 
+    def to_int_list(self):
+        string_list = self.to_list()
+        integer_list = []
+        for result in string_list:
+            temp_list = result.split(sep=':')
+            integer_list.append([int(item) for item in temp_list])
+
+        return integer_list
+
+    def to_list(self):
+        return [self.score_set1, self. score_set2, self.score_set3]
+
+    def winner(self):
+        """
+        returns the winner of the match
+        :return: 1: player1 won, 2:player2 won
+        """
+        saldo = 0
+        sets_list = self.to_int_list()
+        for index in range(0, len(sets_list), step=2):
+            if sets_list[index] > sets_list[index + 1]:
+                saldo += 1
+            else:
+                saldo -= 1
+
+        if saldo > 0:
+            return Players.Player1
+        else:
+            return Players.Player2
+
 
 class PlayerStats(models.Model):
     """
@@ -78,4 +111,9 @@ class PlayerStats(models.Model):
     losses = models.IntegerField(default=0)
 
     # total number of matches played
-    #matches = wins + losses
+    def matches(self):
+        return self.wins + self.losses
+
+    # returning stats as a list
+    def to_list(self):
+        return [self.player.forename, self.player.surname, self.wins, self.losses, self.wins / (self.losses + self.wins)]
