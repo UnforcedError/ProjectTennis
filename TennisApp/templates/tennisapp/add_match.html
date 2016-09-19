@@ -1,8 +1,13 @@
-{% load staticfiles %}
+{% load static %}
 {% load crispy_forms_tags %}
 <html>
     <head>
         <title>Add a new Player's profile</title>
+
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
               integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
@@ -14,7 +19,7 @@
               crossorigin="anonymous">
 
         <!-- Custom CSS -->
-
+        <link rel="stylesheet" type="text/css" href="{% static 'TennisApp/style.css' %}">
 
         <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
@@ -22,6 +27,9 @@
                 crossorigin="anonymous"></script>
     </head>
     <body>
+        <!-- navbar -->
+        {% include 'tennisapp/navbar.html' %}
+
         <div class="container">
             <div class="row">
                 {% crispy form %}

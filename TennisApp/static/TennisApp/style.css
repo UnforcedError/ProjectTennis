@@ -1,0 +1,10 @@
+body {
+    padding: 50px;
+    line-height: 50px;
+}
+
+span {
+    color: gray;
+    font-family: SansSerif;
+    font-size: large;
+}

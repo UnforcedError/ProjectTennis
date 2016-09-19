@@ -20,30 +20,32 @@ class SimpleForm(forms.Form):
 
 
 
-class PlayerForm(forms.ModelForm):
+class PlayerForm(forms.Form):
     """
     Architecture of a form for entering a new player
     """
-
-    class Meta:
-        model = Player
-        fields = ('forename', 'surname', 'dob', 'club')
-
-    def __init__(self, *args, **kwargs):
-        form = super(PlayerForm, self).__init__(*args, **kwargs)
-        for visible in form.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+    forename = forms.CharField(label='Player\'s Forename', max_length=100)
+    surname = forms.CharField(label='Player\'s Surname', max_length=100)
+    dob = forms.DateField(widget=forms.SelectDateWidget)
+    club = forms.CharField(label='Club')
 
 
 class AddMatch(forms.Form):
     """
     Architecture for a form to enter a new Match
     """
+    player1 = forms.ModelChoiceField(queryset=Player.objects.all().order_by('forename'),
+                                     empty_label='choose a player',
+                                     to_field_name='id')
+
+    player2 = forms.ModelChoiceField(queryset=Player.objects.all().order_by('forename'),
+                                     empty_label='choose a player',
+                                     to_field_name='id')
     # Players' names
-    player1_forename = forms.CharField(label='Player\'s Forename', max_length=100)
-    player2_forename = forms.CharField(label='Player\'s Forename', max_length=100)
-    player1_surname = forms.CharField(label='Player\'s Forename', max_length=100)
-    player2_surname = forms.CharField(label='Player\'s Forename', max_length=100)
+    # player1_forename = forms.CharField(label='Player\'s Forename', max_length=100)
+    # player2_forename = forms.CharField(label='Player\'s Forename', max_length=100)
+    # player1_surname = forms.CharField(label='Player\'s Forename', max_length=100)
+    # player2_surname = forms.CharField(label='Player\'s Forename', max_length=100)
 
     # Set1
     set1p1_score = forms.IntegerField(max_value=25, initial=0)
@@ -61,20 +63,23 @@ class AddMatch(forms.Form):
         super(AddMatch, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
-        self.helper.form_action = reverse('TennisApp:test')
+        self.helper.form_action = reverse('TennisApp:table_view')
         self.helper.layout = Layout(
             Fieldset(
                 'Players participating',
-                Fieldset(
-                    'Player 1',
-                    'player1_forename',
-                    'player1_surname'
-                ),
-                Fieldset(
-                    'Player 2',
-                    'player2_forename',
-                    'player2_surname'
-                ),
+                'player1',
+                'player2',
+                # Fieldset(
+                #     'Player 1',
+                #     'player1',
+                #     'player1_forename',
+                #     'player1_surname'
+                # ),
+                # Fieldset(
+                #     'Player 2',
+                #     'player2_forename',
+                #     'player2_surname'
+                # ),
                 css_class='match-set'
             ),
             Fieldset(
@@ -101,22 +106,22 @@ class AddMatch(forms.Form):
         )
         self.helper.add_input(Submit('submit', 'Submit'))
 
-        def check_objects(self, object, surname):
-            try:
-                object_db = object.objects.get(surname)
-            except object.DoesNotExist:
-                msg = 'The object does not exist'
-            else:
-                return object_db
+        # def check_objects(self, object, surname):
+        #     try:
+        #         object_db = object.objects.get(surname)
+        #     except object.DoesNotExist:
+        #         msg = 'The object does not exist'
+        #     else:
+        #         return object_db
 
 
-        def clean(self):
-            cleaned_data = super(AddMatch, self).clean()
-            player_1 = cleaned_data.get('player1_surname')
-            player_2 = cleaned_data.get('player2_surname')
-
-            object1_db = check_objects(Player, player_1)
-            object2_db = check_objects(Player, player_2)
+        # def clean(self):
+        #     cleaned_data = super(AddMatch, self).clean()
+        #     player_1 = cleaned_data.get('player1_surname')
+        #     player_2 = cleaned_data.get('player2_surname')
+        #
+        #     object1_db = check_objects(Player, player_1)
+        #     object2_db = check_objects(Player, player_2)
 
 
 

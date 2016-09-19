@@ -1,7 +1,7 @@
-from .models import *
+from .models import Player, Match, Score, PlayerStats
 
 
-Players = Enum('Player1', 'Player2')
+# Players = Enum('Player1', 'Player2')
 
 
 def create_playerstats(id):
@@ -122,6 +122,34 @@ def get_match_record(player1, player2):
 
         return (wins_player1 - wins_player2, '{0}:{1}'.format(wins_player1, wins_player2)
                 )
+
+
+def refresh_statistics(winner, looser):
+    """
+    This function takes the winner as an input and adds one win to the respective winner and one loose to the looser
+    :param winner: object of the victorious player
+    :param looser: object of the defeated player
+    """
+    winner_db = Player.objects.get(id=winner.id)
+
+
+def create_score(post, match_id):
+    """
+    Creates a score object from a POST object containing the relevant information
+    :param match_id: match_id of the match the score belongs to
+    :param post: POST containing information about at least the score of 1 set and the match object this score belongs to
+    :return: nothing, saves score directly to the Database
+    """
+    # creating score strings
+    score_set1 = '{0}:{1}'.format(post.getlist('set1p1_score')[0], post.getlist('set1p2_score')[0])
+    score_set2 = '{0}:{1}'.format(post.getlist('set2p1_score')[0], post.getlist('set2p2_score')[0])
+    score_set3 = '{0}:{1}'.format(post.getlist('set3p1_score')[0], post.getlist('set3p2_score')[0])
+    score = Score.objects.create(match=Match.objects.get(id=match_id),
+                                 score_set1=score_set1,
+                                 score_set2=score_set2,
+                                 score_set3=score_set3
+                                 )
+    score.save()
 
 
 

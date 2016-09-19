@@ -1,9 +1,11 @@
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
 
-from .forms import  AddMatch, ExampleForm, ExampleFormset, ExampleFormsetHelper
+from .forms import  AddMatch, PlayerForm, ExampleForm, ExampleFormset, ExampleFormsetHelper
 from .models import Match, Player, Score, PlayerStats
-from .utility import create_playerstats, create_table
+from .utility import create_playerstats, create_table, create_score
 
 
 # Create your views here.
@@ -18,11 +20,64 @@ def add_match(request):
         # create a form and populate it with data from the request
         form = AddMatch(request.POST)
         if form.is_valid():
+            pass
+        #    return HttpResponseRedirect(reverse('TennisApp:add_match'))
+
+    else:
+        form = AddMatch()
+
+    # print(form.as_p())
+    return render(request, 'tennisapp/add_match.html', {'form': form})
+
+
+def refresh_stats(request):
+    """
+    Temporary view for refreshing the statistical data
+    """
+
+    # Get player ids
+    player1_id = request.POST.getlist('player1')[0]
+    player2_id = request.POST.getlist('player2')[0]
+
+    # Get player's statistics
+    stats1 = PlayerStats.objects.get(player_id=player1_id)
+    stats2 = PlayerStats.objects.get(player_id=player2_id)
+
+    statistics = [stats1, stats2]
+
+    # Get player objects
+    player1 = Player.objects.get(id=player1_id)
+    player2 = Player.objects.get(id=player2_id)
+
+    players = [player1, player2]
+
+    # create new Match record for Database
+    current_match = Match.objects.create(player1=player1, player2=player2, court='TCBW', date=timezone.now())
+    current_match.save()
+
+    # create score object
+    create_score(request.POST, current_match.id)
+
+    # TODO refresch Playerstatistics and subsequently refresh table
+
+
+
+
+
+def add_player(request):
+    """
+    Add a new player to the Database
+    """
+    # if this is a POST request we need to process the data from the form
+    if request.method == 'POST':
+        # create a form and populate it with data from the request
+        form = PlayerForm(request.POST)
+        if form.is_valid():
             print('data manipulated')
           #   return HttpResponseRedirect(reverse('TennisApp:add_match'))
 
     else:
-        form = AddMatch()
+        form = PlayerForm()
 
     print(form.as_p())
     return render(request, 'tennisapp/add_match.html', {'form': form})
@@ -34,7 +89,11 @@ def show_table(request):
     :param players: http request
     :return:
     """
+
+
     # TODO complete table_view
+    print(request.POST)
+
     table = create_table()
 
     table_strings = []
@@ -43,13 +102,19 @@ def show_table(request):
         for item in sublist:
             sublist_strings.append(str(item))
         table_strings.append(sublist_strings)
-        print(table_strings)
+        # print(table_strings)
         sublist_strings = []
     table_strings.reverse()
-    print(table_strings)
+    # print(table_strings)
     head = ['Forename', 'Surname', 'Wins', 'Losses', 'Win-Ratio']
     return render(request, 'tennisapp/table_form.html', {'head': head,
                                                          'table_string': table_strings})
+
+def process_new_player(request):
+    # TODO create method that inserts the new player into the database and checks if it already exists
+
+
+    return HttpResponseRedirect(reverse('TennisApp:table_view'))
 
 
 
@@ -58,8 +123,8 @@ def show_post(request):
     Just testing stuff
     """
     try:
-        player1_name = request.POST.getlist('player1_forename')[0]
-        player2_name = request.POST.getlist('player2_forename')[0]
+        player1_name = request.POST.getlist('player1')[0]
+        player2_name = request.POST.getlist('player2')[0]
 
     except IndexError:
         print('The used index does not exist')

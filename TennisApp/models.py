@@ -33,6 +33,9 @@ class Player(models.Model):
         dob = self.dob
         return (today.year - dob.year) - ((today.month, today.day) < (dob.month, dob.day))
 
+    def __str__(self):
+        return ''+ self.forename + ' ' + self.surname
+
 
 
 # class for matches

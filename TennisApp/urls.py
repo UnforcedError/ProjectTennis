@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^$', views.add_match, name="add_match"),
     url(r'^test$', views.show_post, name="test"),
     url(r'^formsTest$', views.add_match, name="test_forms"),
-    url(r'^table$', views.show_table, name="table_view")
+    url(r'^table$', views.show_table, name="table_view"),
+    url(r'^addPlayer$', views.add_player, name='new_player')
 ]
