@@ -63,7 +63,7 @@ class AddMatch(forms.Form):
         super(AddMatch, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
-        self.helper.form_action = reverse('TennisApp:table_view')
+        self.helper.form_action = reverse('TennisApp:match_processing')
         self.helper.layout = Layout(
             Fieldset(
                 'Players participating',

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import  AddMatch, PlayerForm, ExampleForm, ExampleFormset, ExampleFormsetHelper
-from .models import Match, Player, Score, PlayerStats
+from .models import Match, Player, Score, PlayerStats, NoWinnerException
 from .utility import create_playerstats, create_table, create_score
 
 
@@ -35,6 +35,8 @@ def refresh_stats(request):
     Temporary view for refreshing the statistical data
     """
 
+    print('Entering refresh_stats')
+
     # Get player ids
     player1_id = request.POST.getlist('player1')[0]
     player2_id = request.POST.getlist('player2')[0]
@@ -48,8 +50,8 @@ def refresh_stats(request):
     # Get player objects
     player1 = Player.objects.get(id=player1_id)
     player2 = Player.objects.get(id=player2_id)
-
     players = [player1, player2]
+    print(players)
 
     # create new Match record for Database
     current_match = Match.objects.create(player1=player1, player2=player2, court='TCBW', date=timezone.now())
@@ -58,7 +60,37 @@ def refresh_stats(request):
     # create score object
     create_score(request.POST, current_match.id)
 
-    # TODO refresch Playerstatistics and subsequently refresh table
+    # get winner
+    try:
+        winner = Score.objects.get(match_id=current_match.id).winner()
+        print(winner)
+
+        if winner == 0:
+            stat_winner = PlayerStats.objects.get(player_id=player1.id)
+            stat_winner.wins += 1
+            stat_winner.save()
+
+            stat_looser = PlayerStats.objects.get(player_id=player2.id)
+            stat_looser.losses += 1
+            stat_looser.save()
+
+        elif winner == 1:
+            stat_winner = PlayerStats.objects.get(player_id=player2.id)
+            stat_winner.wins += 1
+            stat_winner.save()
+
+            stat_looser = PlayerStats.objects.get(player_id=player1.id)
+            stat_looser.losses += 1
+            stat_looser.save()
+    except NoWinnerException as ex:
+        print(ex)
+
+
+
+    # redirect to the table view
+    return HttpResponseRedirect(reverse('TennisApp:table_view'))
+    # TODO testing of this data processing view without a template
+
 
 
 

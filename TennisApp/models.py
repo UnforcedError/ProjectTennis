@@ -1,11 +1,19 @@
-from enum import Enum
-
 from django.db import models
 from django.utils import timezone
 
-Players = Enum('Player1', 'Player2')
 
-# Create your models here.
+#Players = Enum('Player1', 'Player2')
+
+# Utility class
+class NoWinnerException(Exception):
+    """This exception is to be raised when a match ends in a tie"""
+    def __init__(self, player1_name, player2_name):
+        self.player1 = player1_name
+        self.player2 = player2_name
+
+
+    def __str__(self):
+        return "{0} and {1} tied the match".format(self.player1, self.player2)
 
 
 # class for player
@@ -87,16 +95,19 @@ class Score(models.Model):
         """
         saldo = 0
         sets_list = self.to_int_list()
-        for index in range(0, len(sets_list), step=2):
-            if sets_list[index] > sets_list[index + 1]:
+        print(sets_list)
+        for set in sets_list:
+            if set[0] > set[1]:
                 saldo += 1
-            else:
+            elif set[1] > set[0]:
                 saldo -= 1
 
         if saldo > 0:
-            return Players.Player1
+            return 0
+        elif saldo < 0:
+            return 1
         else:
-            return Players.Player2
+            raise NoWinnerException(self.match.player1.forename, self.match.player2.forename)
 
 
 class PlayerStats(models.Model):
@@ -120,3 +131,5 @@ class PlayerStats(models.Model):
     # returning stats as a list
     def to_list(self):
         return [self.player.forename, self.player.surname, self.wins, self.losses, self.wins / (self.losses + self.wins)]
+
+
