@@ -1,4 +1,4 @@
-from .models import Player, Match, Score, PlayerStats
+from .models import Player, Match, Score, PlayerStats, NoWinnerException
 
 
 # Players = Enum('Player1', 'Player2')
@@ -174,3 +174,60 @@ def create_score(post, match_id):
 #             else:
 #                 return False
 
+
+
+def refresh_stats(request):
+    """
+    Temporary view for refreshing the statistical data
+    """
+
+    print('Entering refresh_stats')
+    print(request.POST)
+
+    # Get player ids
+    player1_id = request.POST.getlist('player1')[0]
+    player2_id = request.POST.getlist('player2')[0]
+
+    # Get player's statistics
+    stats1 = PlayerStats.objects.get(player_id=player1_id)
+    stats2 = PlayerStats.objects.get(player_id=player2_id)
+
+    statistics = [stats1, stats2]
+
+    # Get player objects
+    player1 = Player.objects.get(id=player1_id)
+    player2 = Player.objects.get(id=player2_id)
+    players = [player1, player2]
+    print(players)
+
+    # create new Match record for Database
+    current_match = Match.objects.create(player1=player1, player2=player2, court='TCBW', date=timezone.now())
+    current_match.save()
+
+    # create score object
+    create_score(request.POST, current_match.id)
+
+    # get winner
+    try:
+        winner = Score.objects.get(match_id=current_match.id).winner()
+        print(winner)
+
+        if winner == 0:
+            stat_winner = PlayerStats.objects.get(player_id=player1.id)
+            stat_winner.wins += 1
+            stat_winner.save()
+
+            stat_looser = PlayerStats.objects.get(player_id=player2.id)
+            stat_looser.losses += 1
+            stat_looser.save()
+
+        elif winner == 1:
+            stat_winner = PlayerStats.objects.get(player_id=player2.id)
+            stat_winner.wins += 1
+            stat_winner.save()
+
+            stat_looser = PlayerStats.objects.get(player_id=player1.id)
+            stat_looser.losses += 1
+            stat_looser.save()
+    except NoWinnerException as ex:
+        print(ex)

@@ -34,13 +34,59 @@ class AddMatch(forms.Form):
     """
     Architecture for a form to enter a new Match
     """
+
+    def clean(self):
+        """Method to check if the given input is valid"""
+
+        # check if entered
+        print('in clean')
+
+        # get the cleaned data
+        try:
+            cleaned_data = super(AddMatch, self).clean()
+        except:
+            print('impossible to get cleaned data')
+
+
+        # get the players
+        p1 = cleaned_data.get('player1')
+        p2 = cleaned_data.get('player2')
+
+        # check if two players are chosen
+
+
+
+
+        set1p1_score = cleaned_data.get('set1p1_score')
+        set2p1_score = cleaned_data.get('set2p1_score')
+        set1p2_score = cleaned_data.get('set1p2_score')
+        set2p2_score = cleaned_data.get('set2p2_score')
+
+        print(set1p1_score)
+
+        # check if two diferent players are chosen
+        if set1p1_score == 0 and set1p2_score == 0:
+            raise forms.ValidationError(
+                'At least the first set needs a score'
+            )
+
+        if p1 == p2:
+            raise forms.ValidationError(
+                'You chose the same player twice'
+            )
+
+
     player1 = forms.ModelChoiceField(queryset=Player.objects.all().order_by('forename'),
                                      empty_label='choose a player',
-                                     to_field_name='id')
+                                     to_field_name='id',
+                                     required=True)
 
     player2 = forms.ModelChoiceField(queryset=Player.objects.all().order_by('forename'),
                                      empty_label='choose a player',
-                                     to_field_name='id')
+                                     to_field_name='id',
+                                     required=True)
+
+
     # Players' names
     # player1_forename = forms.CharField(label='Player\'s Forename', max_length=100)
     # player2_forename = forms.CharField(label='Player\'s Forename', max_length=100)
@@ -63,7 +109,7 @@ class AddMatch(forms.Form):
         super(AddMatch, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
-        self.helper.form_action = reverse('TennisApp:match_processing')
+        self.helper.form_action = reverse('TennisApp:add_match')
         self.helper.layout = Layout(
             Fieldset(
                 'Players participating',

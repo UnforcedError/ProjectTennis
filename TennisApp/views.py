@@ -4,8 +4,8 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import  AddMatch, PlayerForm, ExampleForm, ExampleFormset, ExampleFormsetHelper
-from .models import Match, Player, Score, PlayerStats, NoWinnerException
-from .utility import create_playerstats, create_table, create_score
+from .models import Match, Player, Score, PlayerStats
+from .utility import create_playerstats, create_table, refresh_stats
 
 
 # Create your views here.
@@ -16,80 +16,24 @@ def add_match(request):
     Adds a match to the statistics
     """
     # if this is a POST request we need to process the data from the form
+    print(request.method)
     if request.method == 'POST':
         # create a form and populate it with data from the request
         form = AddMatch(request.POST)
         if form.is_valid():
-            pass
-        #    return HttpResponseRedirect(reverse('TennisApp:add_match'))
+
+
+            # refreshing stats according to form information
+            refresh_stats(request)
+
+            # redirecting to table_view
+            return HttpResponseRedirect(reverse('TennisApp:table_view'))
 
     else:
         form = AddMatch()
 
     # print(form.as_p())
     return render(request, 'tennisapp/add_match.html', {'form': form})
-
-
-def refresh_stats(request):
-    """
-    Temporary view for refreshing the statistical data
-    """
-
-    print('Entering refresh_stats')
-
-    # Get player ids
-    player1_id = request.POST.getlist('player1')[0]
-    player2_id = request.POST.getlist('player2')[0]
-
-    # Get player's statistics
-    stats1 = PlayerStats.objects.get(player_id=player1_id)
-    stats2 = PlayerStats.objects.get(player_id=player2_id)
-
-    statistics = [stats1, stats2]
-
-    # Get player objects
-    player1 = Player.objects.get(id=player1_id)
-    player2 = Player.objects.get(id=player2_id)
-    players = [player1, player2]
-    print(players)
-
-    # create new Match record for Database
-    current_match = Match.objects.create(player1=player1, player2=player2, court='TCBW', date=timezone.now())
-    current_match.save()
-
-    # create score object
-    create_score(request.POST, current_match.id)
-
-    # get winner
-    try:
-        winner = Score.objects.get(match_id=current_match.id).winner()
-        print(winner)
-
-        if winner == 0:
-            stat_winner = PlayerStats.objects.get(player_id=player1.id)
-            stat_winner.wins += 1
-            stat_winner.save()
-
-            stat_looser = PlayerStats.objects.get(player_id=player2.id)
-            stat_looser.losses += 1
-            stat_looser.save()
-
-        elif winner == 1:
-            stat_winner = PlayerStats.objects.get(player_id=player2.id)
-            stat_winner.wins += 1
-            stat_winner.save()
-
-            stat_looser = PlayerStats.objects.get(player_id=player1.id)
-            stat_looser.losses += 1
-            stat_looser.save()
-    except NoWinnerException as ex:
-        print(ex)
-
-
-
-    # redirect to the table view
-    return HttpResponseRedirect(reverse('TennisApp:table_view'))
-    # TODO testing of this data processing view without a template
 
 
 
